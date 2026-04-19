@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+.conda/
+env/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# LSEG credentials / session files
+*.lseg_credentials
+lseg_data.session
+.env
+
+# Output files — generated at runtime, not committed
+output/
+
+# Keep docs images used in README
+!docs/
+!docs/images/
+!docs/images/cumulative_performance_v2.png
+!docs/images/drawdowns_v2.png
+!docs/images/rolling_volatility_v2.png
+!docs/images/stress_comparison_v2.png
+!docs/images/cumulative_performance_v2_with_bl.png
+!docs/images/sector_allocation_v2.png
+!docs/images/erc_risk_contributions.png
+
+# Legacy images
+docs/images/legacy/
+
+# Working notes — internal only, not for publication
+CODE_CHANGES_SUMMARY.md
+STRESS_TEST_*.md
+FACTOR_ANALYSIS_*.md
+MINCVAR_IMPLEMENTATION.md
+README_CVaR.md
+START_HERE.txt
+CVaR_COMPLETION_SUMMARY.md
+CVAR_QUICKSTART.md
+ANSWERS_TO_YOUR_4_QUESTIONS.md
+INDEX_STRESINDEX_STRESINDEX_STRESPOSURE_ANALYSIS.md
+validate_stress_module.py
+
+# Git internals / archive junk
+__MACOSX/

@@ -1,0 +1,22 @@
+# Core numerical stack
+numpy>=1.24,<3.0
+pandas>=2.0,<4.0
+scipy>=1.10,<2.0
+scikit-learn>=1.3,<2.0
+
+# Optimization (Min CVaR LP solver)
+highspy>=1.5
+
+# Visualization
+matplotlib>=3.7,<4.0
+seaborn>=0.12,<1.0
+
+# Configuration
+pyyaml>=6.0,<7.0
+
+# Data source (requires LSEG Data Desktop running locally)
+lseg-data>=1.0
+
+# Testing
+pytest>=7.0
+pytest-cov>=3.0

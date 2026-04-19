@@ -1,0 +1,42 @@
+theme_name: "ai_tech"
+
+tickers:
+  - "NVDA.O"
+  - "MSFT.O"
+  - "GOOGL.O"
+  - "META.O"
+  - "AMZN.O"
+  - "AAPL.O"
+  - "AMD.O"
+  - "CRM.N"
+  - "ORCL.N"
+  - "ADBE.O"
+  - "QCOM.O"
+  - "INTC.O"
+  - "IBM.N"
+  - "NOW.N"
+  - "SNOW.N"
+  - "PLTR.N"
+  - "ARM.O"
+  - "MSTR.O"
+  - "TSM.N"
+  - "ASML.O"
+
+start_date: "2020-01-01"
+end_date: "2026-04-12"
+
+risk_free_rate: 0.04
+max_weight: 0.20
+rebalance_frequency: "ME"
+lookback_window_days: 252
+transaction_cost_bps: 15.0
+rolling_window_days: 252
+
+# Covariance estimation method for variance-based optimizers (min_variance, max_sharpe, erc).
+# "sample"      : standard sample covariance (default, original behavior)
+# "factor"      : factor-model covariance via OLS — Sigma = B F B' + D
+#                 Uses 3 observable sector factors: Semiconductors, Cloud, Software
+#                 Better-conditioned matrix, factor-based interpretation.
+# "ledoit_wolf" : Ledoit-Wolf analytical shrinkage toward scaled identity
+#                 Always well-conditioned; best when T/n is moderate (10-15).
+covariance_method: "sample"
