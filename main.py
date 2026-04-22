@@ -47,6 +47,8 @@ from src.visualization import (
     plot_weights,
     plot_stress_comparison,
     plot_stress_heatmap,
+    plot_erc_vs_ew_capital_vs_risk,
+    plot_erc_weight_stability,
 )
 
 
@@ -334,6 +336,18 @@ def main() -> None:
     )
     plot_rolling_sharpe(rolling_sharpe_df, output_path="output/charts/rolling_sharpe_v2.png")
     plot_rolling_volatility(rolling_vol_df, output_path="output/charts/rolling_volatility_v2.png")
+
+    # --- ERC flagship charts ---
+    plot_erc_vs_ew_capital_vs_risk(
+        erc_weights=erc_final,
+        ew_weights=ew_final,
+        cov_matrix=cov_matrix_full,
+        output_path="output/charts/erc_vs_ew_capital_risk.png",
+    )
+    plot_erc_weight_stability(
+        erc_weights_history=erc_weights_history,
+        output_path="output/charts/erc_weight_stability.png",
+    )
 
     # --- Terminal summary ---
     print("\n=== V2.1 Dynamic Portfolio Summary ===\n")
