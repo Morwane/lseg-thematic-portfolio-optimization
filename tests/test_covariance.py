@@ -78,10 +78,10 @@ class TestBuildFactorReturns:
     def test_sector_factors_present_with_real_tickers(self):
         returns = make_returns_with_real_tickers()
         factors = build_factor_returns(returns)
-        # All 4 factors should be present: Market + 3 sectors
-        assert set(["Market", "Semiconductors", "Cloud", "Software"]).issubset(
-            set(factors.columns)
-        )
+        # When real tickers cover all sectors, the 3 sector factors must be present.
+        # "Market" is NOT included here — it is handled as the OLS intercept to avoid
+        # multicollinearity with the sector factors (see build_factor_returns docstring).
+        assert set(["Semiconductors", "Cloud", "Software"]).issubset(set(factors.columns))
 
     def test_sector_factor_absent_if_fewer_than_2_members(self):
         # Only 1 semiconductor ticker present — sector factor should not appear

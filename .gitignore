@@ -46,6 +46,8 @@ output/
 !docs/images/cumulative_performance_v2_with_bl.png
 !docs/images/sector_allocation_v2.png
 !docs/images/erc_risk_contributions.png
+!docs/images/erc_vs_ew_capital_risk.png
+!docs/images/erc_weight_stability.png
 
 # Legacy images
 docs/images/legacy/

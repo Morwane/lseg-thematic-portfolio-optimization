@@ -312,3 +312,187 @@ def plot_stress_heatmap(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
+
+
+# ---------------------------------------------------------------------------
+# ERC-specific charts
+# ---------------------------------------------------------------------------
+
+def plot_erc_vs_ew_capital_vs_risk(
+    erc_weights: pd.Series,
+    ew_weights: pd.Series,
+    cov_matrix: np.ndarray,
+    output_path: str = "output/charts/erc_vs_ew_capital_risk.png",
+) -> None:
+    """Capital allocation vs risk contribution for Equal Weight and ERC.
+
+    This is the key figure for the ERC thesis: EW allocates capital equally
+    but lets high-volatility assets dominate the risk budget. ERC equalises
+    risk contributions at the cost of unequal capital weights.
+
+    Left panel: capital weights (EW is flat; ERC underweights high-vol names).
+    Right panel: risk contributions (EW is skewed; ERC is approximately flat).
+    """
+    from src.portfolio import risk_contribution, portfolio_volatility
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    tickers = erc_weights.index.tolist()
+    n = len(tickers)
+
+    ew_w = ew_weights.reindex(tickers).fillna(0.0).values
+    erc_w = erc_weights.reindex(tickers).fillna(0.0).values
+
+    ew_rc = risk_contribution(ew_w, cov_matrix)
+    erc_rc = risk_contribution(erc_w, cov_matrix)
+
+    # Sort by ERC weight descending so the rebalancing effect is visually clear
+    order = np.argsort(erc_w)[::-1]
+    tickers_sorted = [tickers[i] for i in order]
+    ew_w_s = ew_w[order]
+    erc_w_s = erc_w[order]
+    ew_rc_s = ew_rc[order]
+    erc_rc_s = erc_rc[order]
+
+    # Normalise risk contributions to fractions (sum to 1)
+    ew_rc_frac = ew_rc_s / ew_rc_s.sum() if ew_rc_s.sum() > 0 else ew_rc_s
+    erc_rc_frac = erc_rc_s / erc_rc_s.sum() if erc_rc_s.sum() > 0 else erc_rc_s
+
+    ew_color = STRATEGY_COLORS["Equal Weight"]
+    erc_color = STRATEGY_COLORS["ERC"]
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
+    y = np.arange(n)
+
+    # Left — capital weights
+    ax = axes[0]
+    ax.barh(y - 0.2, ew_w_s, height=0.38, label="Equal Weight", color=ew_color, alpha=0.85)
+    ax.barh(y + 0.2, erc_w_s, height=0.38, label="ERC", color=erc_color, alpha=0.85)
+    ax.set_yticks(y)
+    ax.set_yticklabels(tickers_sorted, fontsize=9)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(_pct_formatter))
+    ax.set_title("Capital Allocation", fontsize=13, fontweight="bold")
+    ax.set_xlabel("Weight", fontsize=11)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3, axis="x")
+    ax.axvline(1.0 / n, color="grey", linestyle="--", linewidth=1, alpha=0.6,
+               label=f"1/N = {1/n:.1%}")
+
+    # Right — risk contributions
+    ax = axes[1]
+    ax.barh(y - 0.2, ew_rc_frac, height=0.38, label="Equal Weight", color=ew_color, alpha=0.85)
+    ax.barh(y + 0.2, erc_rc_frac, height=0.38, label="ERC", color=erc_color, alpha=0.85)
+    ax.set_yticks(y)
+    ax.set_yticklabels(tickers_sorted, fontsize=9)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(_pct_formatter))
+    ax.set_title("Risk Contribution (% of portfolio vol)", fontsize=13, fontweight="bold")
+    ax.set_xlabel("Risk Share", fontsize=11)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3, axis="x")
+    ax.axvline(1.0 / n, color="grey", linestyle="--", linewidth=1, alpha=0.6)
+
+    fig.suptitle(
+        "Equal Weight vs ERC — Capital Allocation vs Risk Contribution\n"
+        "EW spreads capital equally but concentrates risk in high-vol names. "
+        "ERC equalises risk contributions.",
+        fontsize=11, y=1.02,
+    )
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close()
+
+
+def plot_erc_weight_stability(
+    erc_weights_history: pd.DataFrame,
+    top_n: int = 10,
+    output_path: str = "output/charts/erc_weight_stability.png",
+) -> None:
+    """Line chart of ERC weights over rebalance windows for the top-N holdings.
+
+    A stable ERC portfolio shows smooth weight evolution, confirming that
+    risk-budgeting does not require aggressive monthly repositioning.
+    """
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    if erc_weights_history.empty:
+        return
+
+    # Select top-N tickers by mean weight
+    mean_weights = erc_weights_history.mean().sort_values(ascending=False)
+    top_tickers = mean_weights.head(top_n).index.tolist()
+    rest = [c for c in erc_weights_history.columns if c not in top_tickers]
+
+    df_plot = erc_weights_history[top_tickers].copy()
+    if rest:
+        df_plot["Others"] = erc_weights_history[rest].sum(axis=1)
+
+    fig, ax = plt.subplots(figsize=(13, 6))
+    color_cycle = plt.cm.tab20.colors  # 20 distinct colours
+
+    for i, col in enumerate(df_plot.columns):
+        color = STRATEGY_COLORS.get(col, color_cycle[i % len(color_cycle)])
+        ax.plot(df_plot.index, df_plot[col], label=col, linewidth=1.6, color=color)
+
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(_pct_formatter))
+    ax.set_title(
+        f"ERC Weight Stability — Top {top_n} Holdings Across Rebalance Windows",
+        fontsize=14, fontweight="bold",
+    )
+    ax.set_xlabel("Rebalance Date", fontsize=12)
+    ax.set_ylabel("Portfolio Weight", fontsize=12)
+    ax.legend(loc="upper right", fontsize=9, ncol=2)
+    ax.grid(True, alpha=0.3)
+    ax.axhline(0, color="black", linewidth=0.6)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close()
+
+
+def plot_sector_allocation(
+    weights_dict: dict,
+    sector_map: dict,
+    output_path: str = "output/charts/sector_allocation_v2.png",
+) -> None:
+    """Grouped bar chart of sector allocations per strategy.
+
+    Args:
+        weights_dict: {strategy_name: pd.Series of weights indexed by ticker}
+        sector_map: {ticker: sector_name} mapping
+        output_path: destination path for the chart
+    """
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    strategies = list(weights_dict.keys())
+    all_sectors = sorted({s for s in sector_map.values()})
+
+    # Build matrix: rows=sectors, cols=strategies
+    data = {}
+    for name, weights in weights_dict.items():
+        sector_totals = {}
+        for ticker, w in weights.items():
+            sector = sector_map.get(ticker, "Other")
+            sector_totals[sector] = sector_totals.get(sector, 0.0) + w
+        data[name] = sector_totals
+
+    df = pd.DataFrame(data, index=all_sectors).fillna(0.0)
+
+    x = np.arange(len(all_sectors))
+    width = 0.8 / len(strategies)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for i, strat in enumerate(strategies):
+        offset = (i - len(strategies) / 2 + 0.5) * width
+        color = STRATEGY_COLORS.get(strat, "#888888")
+        ax.bar(x + offset, df[strat].values, width, label=strat,
+               color=color, alpha=0.85, edgecolor="white", linewidth=0.5)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(all_sectors, rotation=12, ha="right", fontsize=11)
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(_pct_formatter))
+    ax.set_ylabel("Sector Weight", fontsize=12)
+    ax.set_title("Sector Allocation by Strategy", fontsize=14, fontweight="bold")
+    ax.legend(loc="upper right", fontsize=10)
+    ax.grid(True, alpha=0.3, axis="y")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close()

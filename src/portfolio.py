@@ -81,8 +81,8 @@ def min_variance_portfolio(cov_matrix: np.ndarray, max_weight: float) -> np.ndar
         return equal_weight_portfolio(n_assets)
     
     weights = result.x
-    weights = np.clip(weights, 0.0, None)       # éliminer les -1e-15
-    weights /= weights.sum()                     # renormaliser
+    weights = np.clip(weights, 0.0, None)       # clear numerical noise (e.g. -1e-15)
+    weights /= weights.sum()                     # renormalise to sum=1
     return weights
 
 
@@ -113,8 +113,8 @@ def max_sharpe_portfolio(
         return equal_weight_portfolio(n_assets)
     
     weights = result.x
-    weights = np.clip(weights, 0.0, None)       # éliminer les -1e-15
-    weights /= weights.sum()                     # renormaliser
+    weights = np.clip(weights, 0.0, None)       # clear numerical noise (e.g. -1e-15)
+    weights /= weights.sum()                     # renormalise to sum=1
     return weights
 
 
@@ -140,8 +140,8 @@ def equal_risk_contribution_portfolio(cov_matrix: np.ndarray, max_weight: float)
         return equal_weight_portfolio(n_assets)
     
     weights = result.x
-    weights = np.clip(weights, 0.0, None)       # éliminer les -1e-15
-    weights /= weights.sum()                     # renormaliser
+    weights = np.clip(weights, 0.0, None)       # clear numerical noise (e.g. -1e-15)
+    weights /= weights.sum()                     # renormalise to sum=1
     return weights
 
 
